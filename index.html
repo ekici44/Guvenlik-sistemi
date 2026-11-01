@@ -75,11 +75,12 @@ body{padding:calc(env(safe-area-inset-top) + 12px) 16px calc(env(safe-area-inset
 
 <div class="izgara">
   <button class="btn" data-komut="durum"><span>📊</span>Durum<small>Sistem ne durumda</small></button>
-  <button class="btn" data-komut="test"><span>🧪</span>Test et<small>Tüm modülleri dene</small></button>
+  <button class="btn" data-komut="ozet"><span>📋</span>Özet<small>Son 24 saat</small></button>
   <button class="btn" data-komut="tuzak ac"><span>🪤</span>Tuzağı aç<small>Sahte panel + telnet</small></button>
   <button class="btn" data-komut="tuzak kapat"><span>🚪</span>Tuzağı kapat<small>Kapıları kapat</small></button>
   <button class="btn" data-komut="durdur" data-onay="Sistem duraklatılsın mı? Saatlik kontroller durur, telefondan komutlar çalışmaya devam eder."><span>⏸</span>Duraklat<small>Saatlik kontrolleri durdur</small></button>
   <button class="btn" data-komut="baslat"><span>▶️</span>Devam ettir<small>Sistemi tekrar aç</small></button>
+  <button class="btn genis" data-komut="test"><span>🧪</span>Test et<small>Tüm modülleri dene, sonuç bildirim olarak gelir</small></button>
   <button class="btn tehlike genis" data-komut="kapat" data-onay="Bilgisayar kapatılsın mı? Programın çalışan işi varsa önce o biter. Tuzak açıksa kapatılır."><span>⏻</span>Bilgisayarı kapat<small>Birkaç saniye içinde kapanır</small></button>
 </div>
 
@@ -149,7 +150,7 @@ body{padding:calc(env(safe-area-inset-top) + 12px) 16px calc(env(safe-area-inset
   function ekle(m){
     if (m.event !== 'message' || gorulen[m.id]) return false;
     gorulen[m.id] = 1; olaylar.push(m);
-    if (m.title === 'Durum' && m.message) $('durumMetin').textContent = m.message;
+    if ((m.title === 'Durum' || /^Ozet/.test(m.title||'')) && m.message) $('durumMetin').textContent = m.message;
     return true;
   }
   function ciz(){
