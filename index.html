@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Güvenlik">
+<meta name="theme-color" content="#0b0f14">
+<title>Güvenlik Paneli</title>
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="manifest" href="manifest.json">
+<style>
+:root{
+  --bg:#0b0f14;--kart:#131a22;--kart2:#18212c;--cizgi:#243040;--yazi:#e8eef5;--soluk:#8a99ab;
+  --mavi:#3d8bfd;--yesil:#2fbf71;--sari:#e8a33d;--kirmizi:#ef5350;--r:14px
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--yazi);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+body{padding:calc(env(safe-area-inset-top) + 12px) 16px calc(env(safe-area-inset-bottom) + 24px)}
+.ust{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.ust h1{font-size:20px;margin:0;letter-spacing:.3px}
+.ust small{display:block;color:var(--soluk);font-size:12px;margin-top:2px}
+.nokta{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--soluk);margin-right:6px;vertical-align:middle}
+.nokta.on{background:var(--yesil);box-shadow:0 0 8px var(--yesil)}
+.nokta.off{background:var(--kirmizi)}
+.ikon-btn{background:var(--kart);border:1px solid var(--cizgi);color:var(--yazi);border-radius:12px;width:40px;height:40px;font-size:18px}
+.durum{background:var(--kart);border:1px solid var(--cizgi);border-radius:var(--r);padding:14px 16px;margin-bottom:14px}
+.durum h2{font-size:13px;color:var(--soluk);margin:0 0 8px;font-weight:600;text-transform:uppercase;letter-spacing:.6px}
+.durum pre{margin:0;white-space:pre-wrap;font:14px/1.55 -apple-system,BlinkMacSystemFont,sans-serif}
+.izgara{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
+.btn{background:var(--kart2);border:1px solid var(--cizgi);color:var(--yazi);border-radius:var(--r);padding:16px 12px;font-size:15px;font-weight:600;display:flex;flex-direction:column;align-items:flex-start;gap:6px;text-align:left}
+.btn span{font-size:22px}
+.btn small{font-weight:400;color:var(--soluk);font-size:12px}
+.btn:active{transform:scale(.97)}
+.btn.tehlike{border-color:#5a2a2a;background:#1e1416}
+.btn.genis{grid-column:span 2}
+.btn[disabled]{opacity:.5}
+.baslik{display:flex;justify-content:space-between;align-items:center;margin:4px 2px 8px}
+.baslik h3{font-size:13px;color:var(--soluk);margin:0;text-transform:uppercase;letter-spacing:.6px}
+.baslik button{background:none;border:0;color:var(--mavi);font-size:14px}
+.olay{background:var(--kart);border:1px solid var(--cizgi);border-left:4px solid var(--mavi);border-radius:12px;padding:11px 13px;margin-bottom:8px}
+.olay.kirmizi{border-left-color:var(--kirmizi)}.olay.sari{border-left-color:var(--sari)}.olay.yesil{border-left-color:var(--yesil)}
+.olay b{display:block;font-size:14px;margin-bottom:3px}
+.olay p{margin:0;font-size:13px;color:#c9d4e0;white-space:pre-wrap;line-height:1.45}
+.olay time{display:block;font-size:11px;color:var(--soluk);margin-top:5px}
+.bos{color:var(--soluk);font-size:14px;text-align:center;padding:22px 0}
+.perde{position:fixed;inset:0;background:#000a;display:none;align-items:flex-end;justify-content:center;z-index:10}
+.perde.acik{display:flex}
+.pencere{background:var(--kart);border:1px solid var(--cizgi);border-radius:18px 18px 0 0;padding:20px 18px calc(env(safe-area-inset-bottom) + 18px);width:100%;max-width:520px}
+.pencere h4{margin:0 0 8px;font-size:17px}
+.pencere p{margin:0 0 14px;color:var(--soluk);font-size:14px;line-height:1.45}
+.pencere label{display:block;font-size:12px;color:var(--soluk);margin:10px 0 4px}
+.pencere input{width:100%;background:var(--bg);border:1px solid var(--cizgi);color:var(--yazi);border-radius:10px;padding:12px;font-size:15px}
+.sira{display:flex;gap:10px;margin-top:16px}
+.sira button{flex:1;padding:14px;border-radius:12px;border:0;font-size:15px;font-weight:600}
+.iptal{background:var(--kart2);color:var(--yazi)}
+.tamam{background:var(--mavi);color:#fff}
+.tamam.kirmizi{background:var(--kirmizi)}
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 20px);transform:translateX(-50%);background:#223044;color:#fff;padding:10px 16px;border-radius:20px;font-size:14px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:20}
+.toast.gor{opacity:1}
+</style>
+</head>
+<body>
+<div class="ust">
+  <div><h1>Güvenlik Paneli</h1><small><span id="nokta" class="nokta"></span><span id="baglanti">Bağlanıyor…</span></small></div>
+  <button class="ikon-btn" id="ayarBtn" aria-label="Ayarlar">⚙︎</button>
+</div>
+
+<section class="durum">
+  <h2>Sistem durumu</h2>
+  <pre id="durumMetin">Durumu görmek için “Durum” butonuna bas.</pre>
+</section>
+
+<div class="izgara">
+  <button class="btn" data-komut="durum"><span>📊</span>Durum<small>Sistem ne durumda</small></button>
+  <button class="btn" data-komut="test"><span>🧪</span>Test et<small>Tüm modülleri dene</small></button>
+  <button class="btn" data-komut="tuzak ac"><span>🪤</span>Tuzağı aç<small>Sahte panel + telnet</small></button>
+  <button class="btn" data-komut="tuzak kapat"><span>🚪</span>Tuzağı kapat<small>Kapıları kapat</small></button>
+  <button class="btn" data-komut="durdur" data-onay="Sistem duraklatılsın mı? Saatlik kontroller durur, telefondan komutlar çalışmaya devam eder."><span>⏸</span>Duraklat<small>Saatlik kontrolleri durdur</small></button>
+  <button class="btn" data-komut="baslat"><span>▶️</span>Devam ettir<small>Sistemi tekrar aç</small></button>
+  <button class="btn tehlike genis" data-komut="kapat" data-onay="Bilgisayar kapatılsın mı? Programın çalışan işi varsa önce o biter. Tuzak açıksa kapatılır."><span>⏻</span>Bilgisayarı kapat<small>Birkaç saniye içinde kapanır</small></button>
+</div>
+
+<div class="baslik"><h3>Son olaylar</h3><button id="yenile">Yenile</button></div>
+<div id="olaylar"><div class="bos">Yükleniyor…</div></div>
+
+<div class="perde" id="onayPerde">
+  <div class="pencere">
+    <h4 id="onayBaslik">Emin misin?</h4>
+    <p id="onayMetin"></p>
+    <div class="sira"><button class="iptal" id="onayIptal">Vazgeç</button><button class="tamam kirmizi" id="onayEvet">Evet</button></div>
+  </div>
+</div>
+
+<div class="perde" id="ayarPerde">
+  <div class="pencere">
+    <h4>Bağlantı ayarları</h4>
+    <p>Bu bilgiler sadece bu telefonda saklanır. Bilgisayardaki config.json dosyasında yazan kanal adlarını gir.</p>
+    <label for="bKanal">Bildirim kanalı (ntfy_konu)</label>
+    <input id="bKanal" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="guvenlik-…">
+    <label for="kKanal">Komut kanalı (komut_konu)</label>
+    <input id="kKanal" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="guvenlik-komut-…">
+    <div class="sira"><button class="iptal" id="ayarIptal">Vazgeç</button><button class="tamam" id="ayarKaydet">Kaydet</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  var SUNUCU = 'https://ntfy.sh';
+  var $ = function(id){ return document.getElementById(id); };
+
+  // --- ayarlar (sadece bu cihazda) ---
+  function oku(k){ try { return localStorage.getItem(k) || ''; } catch(e){ return bellek[k] || ''; } }
+  function yaz(k,v){ try { localStorage.setItem(k,v); } catch(e){ bellek[k]=v; } }
+  var bellek = {};
+  // Kurulum linki: ...#b=<bildirim>&k=<komut>  (# sonrasi sunucuya gitmez)
+  if (location.hash.length > 1) {
+    var h = new URLSearchParams(location.hash.slice(1));
+    if (h.get('b')) yaz('bKanal', h.get('b'));
+    if (h.get('k')) yaz('kKanal', h.get('k'));
+    history.replaceState(null, '', location.pathname + location.search);
+  }
+  function kanallar(){ return { b: oku('bKanal'), k: oku('kKanal') }; }
+
+  // --- yardimcilar ---
+  var toastZ;
+  function toast(m){ var t=$('toast'); t.textContent=m; t.classList.add('gor'); clearTimeout(toastZ); toastZ=setTimeout(function(){t.classList.remove('gor');},2600); }
+  function baglanti(durum, metin){ $('nokta').className = 'nokta ' + durum; $('baglanti').textContent = metin; }
+  function zaman(sn){
+    var d = new Date(sn*1000), simdi = new Date();
+    var saat = d.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});
+    if (d.toDateString() === simdi.toDateString()) return 'Bugün ' + saat;
+    return d.toLocaleDateString('tr-TR',{day:'numeric',month:'short'}) + ' ' + saat;
+  }
+  function renk(m){
+    var t = (m.tags||[]).join(' ') + ' ' + (m.title||'');
+    if (/rotating_light|skull|no_entry|warning|Saldirgan|suphe|Tuzaga/i.test(t)) return 'kirmizi';
+    if (/thermometer|email|Donanim/i.test(t)) return 'sari';
+    if (/white_check_mark|robot/i.test(t)) return 'yesil';
+    return '';
+  }
+
+  // --- olay listesi ---
+  var olaylar = [], gorulen = {};
+  function ekle(m){
+    if (m.event !== 'message' || gorulen[m.id]) return false;
+    gorulen[m.id] = 1; olaylar.push(m);
+    if (m.title === 'Durum' && m.message) $('durumMetin').textContent = m.message;
+    return true;
+  }
+  function ciz(){
+    var kutu = $('olaylar');
+    if (!olaylar.length) { kutu.innerHTML = '<div class="bos">Son 12 saatte olay yok. Her şey sakin.</div>'; return; }
+    olaylar.sort(function(a,b){ return b.time - a.time; });
+    kutu.innerHTML = '';
+    olaylar.slice(0,60).forEach(function(m){
+      var d = document.createElement('div'); d.className = 'olay ' + renk(m);
+      var b = document.createElement('b'); b.textContent = m.title || 'Bildirim';
+      var p = document.createElement('p'); p.textContent = m.message || '';
+      var t = document.createElement('time'); t.textContent = zaman(m.time);
+      d.appendChild(b); d.appendChild(p); d.appendChild(t); kutu.appendChild(d);
+    });
+  }
+  function gecmis(){
+    var k = kanallar(); if (!k.b) return Promise.resolve();
+    return fetch(SUNUCU + '/' + encodeURIComponent(k.b) + '/json?poll=1&since=12h')
+      .then(function(r){ if(!r.ok) throw 0; return r.text(); })
+      .then(function(txt){
+        txt.split('\n').forEach(function(s){ if (s.trim()) { try { ekle(JSON.parse(s)); } catch(e){} } });
+        ciz();
+        // en son Durum cevabini ust kutuya koy
+        var son = olaylar.filter(function(m){return m.title==='Durum';}).sort(function(a,b){return b.time-a.time;})[0];
+        if (son) $('durumMetin').textContent = son.message;
+      })
+      .catch(function(){ baglanti('off','Bağlanılamadı'); });
+  }
+  var akis;
+  function canli(){
+    var k = kanallar(); if (!k.b || !window.EventSource) return;
+    if (akis) akis.close();
+    akis = new EventSource(SUNUCU + '/' + encodeURIComponent(k.b) + '/sse');
+    akis.onopen = function(){ baglanti('on','Canlı bağlı'); };
+    akis.onerror = function(){ baglanti('off','Bağlantı koptu, yeniden deneniyor…'); };
+    akis.onmessage = function(e){ try { var m = JSON.parse(e.data); if (ekle(m)) { ciz(); if (m.title !== 'Durum') toast(m.title || 'Yeni olay'); } } catch(x){} };
+  }
+
+  // --- komut gonderme ---
+  function gonder(komut){
+    var k = kanallar();
+    if (!k.k) { ayarAc(); return; }
+    var dugmeler = document.querySelectorAll('.btn'); dugmeler.forEach(function(b){ b.disabled = true; });
+    fetch(SUNUCU + '/' + encodeURIComponent(k.k), { method:'POST', body: komut })
+      .then(function(r){ if(!r.ok) throw 0; toast('Gönderildi: ' + komut + ' — cevap birkaç saniye içinde'); if (komut==='durum') $('durumMetin').textContent='Soruluyor…'; })
+      .catch(function(){ toast('Gönderilemedi. İnternet bağlantını kontrol et.'); })
+      .then(function(){ setTimeout(function(){ dugmeler.forEach(function(b){ b.disabled = false; }); }, 1500); });
+  }
+  var bekleyen = null;
+  document.querySelectorAll('.btn').forEach(function(b){
+    b.addEventListener('click', function(){
+      var komut = b.getAttribute('data-komut'), onay = b.getAttribute('data-onay');
+      if (onay) { bekleyen = komut; $('onayBaslik').textContent = b.childNodes[1].textContent.trim() + '?'; $('onayMetin').textContent = onay; $('onayPerde').classList.add('acik'); }
+      else gonder(komut);
+    });
+  });
+  $('onayIptal').onclick = function(){ bekleyen=null; $('onayPerde').classList.remove('acik'); };
+  $('onayEvet').onclick = function(){ $('onayPerde').classList.remove('acik'); if (bekleyen) gonder(bekleyen); bekleyen=null; };
+
+  // --- ayarlar penceresi ---
+  function ayarAc(){ var k=kanallar(); $('bKanal').value=k.b; $('kKanal').value=k.k; $('ayarPerde').classList.add('acik'); }
+  $('ayarBtn').onclick = ayarAc;
+  $('ayarIptal').onclick = function(){ $('ayarPerde').classList.remove('acik'); };
+  $('ayarKaydet').onclick = function(){
+    yaz('bKanal', $('bKanal').value.trim()); yaz('kKanal', $('kKanal').value.trim());
+    $('ayarPerde').classList.remove('acik'); olaylar=[]; gorulen={}; basla();
+  };
+  $('yenile').onclick = function(){ gecmis().then(function(){ toast('Güncellendi'); }); };
+  document.addEventListener('visibilitychange', function(){ if (!document.hidden) { gecmis(); canli(); } });
+
+  function basla(){
+    var k = kanallar();
+    if (!k.b || !k.k) { baglanti('', 'Kurulum gerekli'); $('olaylar').innerHTML='<div class="bos">Sağ üstteki ⚙︎ ile kanalları gir.</div>'; ayarAc(); return; }
+    gecmis().then(canli);
+  }
+  basla();
+})();
+</script>
+</body>
+</html>
