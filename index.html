@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Güvenlik">
 <meta name="theme-color" content="#0b0f14">
-<title>Güvenlik Paneli</title>
+<title>Kalkan Pro</title>
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
 <style>
@@ -58,15 +58,24 @@ body{padding:calc(env(safe-area-inset-top) + 12px) 16px calc(env(safe-area-inset
 .iptal{background:var(--kart2);color:var(--yazi)}
 .tamam{background:var(--mavi);color:#fff}
 .tamam.kirmizi{background:var(--kirmizi)}
+.cihazlar{display:flex;gap:8px;overflow-x:auto;margin:-4px 0 12px;padding-bottom:2px}
+.cip{flex:0 0 auto;background:var(--kart);border:1px solid var(--cizgi);color:var(--soluk);border-radius:20px;padding:7px 14px;font-size:13px}
+.cip.secili{background:var(--mavi);border-color:var(--mavi);color:#fff}
+.cliste .satir{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--cizgi);padding:8px 0;font-size:14px}
+.cliste .satir small{display:block;color:var(--soluk);font-size:11px}
+.cliste button{background:none;border:0;color:var(--kirmizi);font-size:13px}
+.olay .etiket{display:inline-block;font-size:10px;color:var(--soluk);border:1px solid var(--cizgi);border-radius:8px;padding:1px 6px;margin-left:6px;vertical-align:middle}
 .toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 20px);transform:translateX(-50%);background:#223044;color:#fff;padding:10px 16px;border-radius:20px;font-size:14px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:20}
 .toast.gor{opacity:1}
 </style>
 </head>
 <body>
 <div class="ust">
-  <div><h1>Güvenlik Paneli</h1><small><span id="nokta" class="nokta"></span><span id="baglanti">Bağlanıyor…</span></small></div>
-  <button class="ikon-btn" id="ayarBtn" aria-label="Ayarlar">⚙︎</button>
+  <div><h1>Kalkan Pro</h1><small><span id="nokta" class="nokta"></span><span id="baglanti">Bağlanıyor…</span></small></div>
+  <button class="ikon-btn" id="ayarBtn" aria-label="Bilgisayarlar">⚙︎</button>
 </div>
+
+<div class="cihazlar" id="cihazlar"></div>
 
 <section class="durum">
   <h2>Sistem durumu</h2>
@@ -80,7 +89,8 @@ body{padding:calc(env(safe-area-inset-top) + 12px) 16px calc(env(safe-area-inset
   <button class="btn" data-komut="tuzak kapat"><span>🚪</span>Tuzağı kapat<small>Kapıları kapat</small></button>
   <button class="btn" data-komut="durdur" data-onay="Sistem duraklatılsın mı? Saatlik kontroller durur, telefondan komutlar çalışmaya devam eder."><span>⏸</span>Duraklat<small>Saatlik kontrolleri durdur</small></button>
   <button class="btn" data-komut="baslat"><span>▶️</span>Devam ettir<small>Sistemi tekrar aç</small></button>
-  <button class="btn genis" data-komut="test"><span>🧪</span>Test et<small>Tüm modülleri dene, sonuç bildirim olarak gelir</small></button>
+  <button class="btn" data-komut="test"><span>🧪</span>Test et<small>Sonuç bildirim olarak gelir</small></button>
+  <button class="btn" data-komut="kilitle" data-onay="Bilgisayarın ekranı hemen kilitlensin mi?"><span>🔒</span>Kilitle<small>Ekranı hemen kilitle</small></button>
   <button class="btn tehlike genis" data-komut="kapat" data-onay="Bilgisayar kapatılsın mı? Programın çalışan işi varsa önce o biter. Tuzak açıksa kapatılır."><span>⏻</span>Bilgisayarı kapat<small>Birkaç saniye içinde kapanır</small></button>
 </div>
 
@@ -97,13 +107,16 @@ body{padding:calc(env(safe-area-inset-top) + 12px) 16px calc(env(safe-area-inset
 
 <div class="perde" id="ayarPerde">
   <div class="pencere">
-    <h4>Bağlantı ayarları</h4>
-    <p>Bu bilgiler sadece bu telefonda saklanır. Bilgisayardaki config.json dosyasında yazan kanal adlarını gir.</p>
-    <label for="bKanal">Bildirim kanalı (ntfy_konu)</label>
-    <input id="bKanal" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="guvenlik-…">
-    <label for="kKanal">Komut kanalı (komut_konu)</label>
-    <input id="kKanal" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="guvenlik-komut-…">
-    <div class="sira"><button class="iptal" id="ayarIptal">Vazgeç</button><button class="tamam" id="ayarKaydet">Kaydet</button></div>
+    <h4>Bilgisayarlar</h4>
+    <p>Yeni bilgisayar eklemek için o bilgisayardaki Nöbetçi penceresinde <b>Telefon kurulumu</b> QR kodunu telefon kamerasıyla okut. Bilgiler sadece bu telefonda saklanır.</p>
+    <div class="cliste" id="cliste"></div>
+    <details style="margin-top:12px"><summary style="color:var(--mavi);font-size:14px">Elle ekle</summary>
+      <label for="cAd">Bilgisayar adı</label><input id="cAd" placeholder="Ev bilgisayarı">
+      <label for="bKanal">Bildirim kanalı</label><input id="bKanal" autocapitalize="off" autocorrect="off" spellcheck="false">
+      <label for="kKanal">Komut kanalı</label><input id="kKanal" autocapitalize="off" autocorrect="off" spellcheck="false">
+      <div class="sira"><button class="tamam" id="ayarKaydet">Ekle</button></div>
+    </details>
+    <div class="sira"><button class="iptal" id="ayarIptal">Kapat</button></div>
   </div>
 </div>
 
@@ -113,19 +126,30 @@ body{padding:calc(env(safe-area-inset-top) + 12px) 16px calc(env(safe-area-inset
 (function(){
   var SUNUCU = 'https://ntfy.sh';
   var $ = function(id){ return document.getElementById(id); };
-
-  // --- ayarlar (sadece bu cihazda) ---
+  var bellek = {};
   function oku(k){ try { return localStorage.getItem(k) || ''; } catch(e){ return bellek[k] || ''; } }
   function yaz(k,v){ try { localStorage.setItem(k,v); } catch(e){ bellek[k]=v; } }
-  var bellek = {};
-  // Kurulum linki: ...#b=<bildirim>&k=<komut>  (# sonrasi sunucuya gitmez)
+
+  // --- cihazlar (sadece bu telefonda) ---
+  function cihazlar(){ try { return JSON.parse(oku('cihazlar') || '[]'); } catch(e){ return []; } }
+  function kaydet(l){ yaz('cihazlar', JSON.stringify(l)); }
+  function ekleCihaz(ad, b, k){
+    if (!b || !k) return;
+    var l = cihazlar(), i = l.findIndex(function(c){ return c.k === k; });
+    if (i >= 0) { l[i].b = b; if (ad) l[i].ad = ad; } else { l.push({ad: ad || ('Bilgisayar ' + (l.length+1)), b: b, k: k}); i = l.length-1; }
+    kaydet(l); yaz('secili', String(i));
+  }
+  // eski tek-cihaz kurulumunu tasi
+  if (!oku('cihazlar') && oku('kKanal')) ekleCihaz('Bilgisayarım', oku('bKanal'), oku('kKanal'));
+  // kurulum linki: #b=..&k=..&ad=..  (# sonrasi sunucuya gitmez)
   if (location.hash.length > 1) {
     var h = new URLSearchParams(location.hash.slice(1));
-    if (h.get('b')) yaz('bKanal', h.get('b'));
-    if (h.get('k')) yaz('kKanal', h.get('k'));
+    ekleCihaz(h.get('ad') || '', h.get('b'), h.get('k'));
     history.replaceState(null, '', location.pathname + location.search);
   }
-  function kanallar(){ return { b: oku('bKanal'), k: oku('kKanal') }; }
+  function seciliNo(){ var n = parseInt(oku('secili') || '0', 10); var l = cihazlar(); return (n >= 0 && n < l.length) ? n : 0; }
+  function secili(){ return cihazlar()[seciliNo()]; }
+  function cihazAdi(topic){ var c = cihazlar().find(function(x){ return x.b === topic; }); return c ? c.ad : ''; }
 
   // --- yardimcilar ---
   var toastZ;
@@ -139,63 +163,80 @@ body{padding:calc(env(safe-area-inset-top) + 12px) 16px calc(env(safe-area-inset
   }
   function renk(m){
     var t = (m.tags||[]).join(' ') + ' ' + (m.title||'');
-    if (/rotating_light|skull|no_entry|warning|Saldirgan|suphe|Tuzaga/i.test(t)) return 'kirmizi';
-    if (/thermometer|email|Donanim/i.test(t)) return 'sari';
-    if (/white_check_mark|robot/i.test(t)) return 'yesil';
+    if (/rotating_light|skull|no_entry|warning|Saldirgan|suphe|Tuzaga|korumasi/i.test(t)) return 'kirmizi';
+    if (/thermometer|email|Donanim|video_game/i.test(t)) return 'sari';
+    if (/white_check_mark|robot|shield|clipboard/i.test(t)) return 'yesil';
     return '';
   }
+  function sadeBaslik(m){ return (m.title || 'Bildirim').replace(/^\[[^\]]*\]\s*/, ''); }
 
-  // --- olay listesi ---
+  // --- cihaz cubugu ---
+  function cizCihazlar(){
+    var l = cihazlar(), kutu = $('cihazlar'); kutu.innerHTML = '';
+    kutu.style.display = l.length > 1 ? 'flex' : 'none';
+    l.forEach(function(c, i){
+      var b = document.createElement('button'); b.className = 'cip' + (i === seciliNo() ? ' secili' : ''); b.textContent = c.ad;
+      b.onclick = function(){ yaz('secili', String(i)); cizCihazlar(); durumGoster(); };
+      kutu.appendChild(b);
+    });
+  }
+
+  // --- olay listesi (tum cihazlar) ---
   var olaylar = [], gorulen = {};
   function ekle(m){
     if (m.event !== 'message' || gorulen[m.id]) return false;
-    gorulen[m.id] = 1; olaylar.push(m);
-    if ((m.title === 'Durum' || /^Ozet/.test(m.title||'')) && m.message) $('durumMetin').textContent = m.message;
-    return true;
+    gorulen[m.id] = 1; olaylar.push(m); return true;
+  }
+  function durumGoster(){
+    var c = secili(); if (!c) return;
+    var son = olaylar.filter(function(m){ return m.topic === c.b && /^(Durum|Ozet|Gunluk ozet)/.test(sadeBaslik(m)); })
+                     .sort(function(a,b){ return b.time-a.time; })[0];
+    $('durumMetin').textContent = son ? son.message : (c.ad + ' için durumu görmek üzere “Durum”a bas.');
   }
   function ciz(){
     var kutu = $('olaylar');
     if (!olaylar.length) { kutu.innerHTML = '<div class="bos">Son 12 saatte olay yok. Her şey sakin.</div>'; return; }
     olaylar.sort(function(a,b){ return b.time - a.time; });
     kutu.innerHTML = '';
-    olaylar.slice(0,60).forEach(function(m){
+    var cok = cihazlar().length > 1;
+    olaylar.slice(0,80).forEach(function(m){
       var d = document.createElement('div'); d.className = 'olay ' + renk(m);
-      var b = document.createElement('b'); b.textContent = m.title || 'Bildirim';
+      var b = document.createElement('b'); b.textContent = sadeBaslik(m);
+      if (cok) { var e = document.createElement('span'); e.className = 'etiket'; e.textContent = cihazAdi(m.topic); b.appendChild(e); }
       var p = document.createElement('p'); p.textContent = m.message || '';
       var t = document.createElement('time'); t.textContent = zaman(m.time);
       d.appendChild(b); d.appendChild(p); d.appendChild(t); kutu.appendChild(d);
     });
+    durumGoster();
   }
+  function konular(){ return cihazlar().map(function(c){ return encodeURIComponent(c.b); }).join(','); }
   function gecmis(){
-    var k = kanallar(); if (!k.b) return Promise.resolve();
-    return fetch(SUNUCU + '/' + encodeURIComponent(k.b) + '/json?poll=1&since=12h')
+    if (!cihazlar().length) return Promise.resolve();
+    return fetch(SUNUCU + '/' + konular() + '/json?poll=1&since=12h')
       .then(function(r){ if(!r.ok) throw 0; return r.text(); })
       .then(function(txt){
         txt.split('\n').forEach(function(s){ if (s.trim()) { try { ekle(JSON.parse(s)); } catch(e){} } });
         ciz();
-        // en son Durum cevabini ust kutuya koy
-        var son = olaylar.filter(function(m){return m.title==='Durum';}).sort(function(a,b){return b.time-a.time;})[0];
-        if (son) $('durumMetin').textContent = son.message;
       })
       .catch(function(){ baglanti('off','Bağlanılamadı'); });
   }
   var akis;
   function canli(){
-    var k = kanallar(); if (!k.b || !window.EventSource) return;
+    if (!cihazlar().length || !window.EventSource) return;
     if (akis) akis.close();
-    akis = new EventSource(SUNUCU + '/' + encodeURIComponent(k.b) + '/sse');
-    akis.onopen = function(){ baglanti('on','Canlı bağlı'); };
+    akis = new EventSource(SUNUCU + '/' + konular() + '/sse');
+    akis.onopen = function(){ baglanti('on', cihazlar().length > 1 ? (cihazlar().length + ' bilgisayar canlı') : 'Canlı bağlı'); };
     akis.onerror = function(){ baglanti('off','Bağlantı koptu, yeniden deneniyor…'); };
-    akis.onmessage = function(e){ try { var m = JSON.parse(e.data); if (ekle(m)) { ciz(); if (m.title !== 'Durum') toast(m.title || 'Yeni olay'); } } catch(x){} };
+    akis.onmessage = function(e){ try { var m = JSON.parse(e.data); if (ekle(m)) { ciz(); if (!/^Durum/.test(sadeBaslik(m))) toast(m.title || 'Yeni olay'); } } catch(x){} };
   }
 
-  // --- komut gonderme ---
+  // --- komut gonderme (secili bilgisayara) ---
   function gonder(komut){
-    var k = kanallar();
-    if (!k.k) { ayarAc(); return; }
+    var c = secili();
+    if (!c) { ayarAc(); return; }
     var dugmeler = document.querySelectorAll('.btn'); dugmeler.forEach(function(b){ b.disabled = true; });
-    fetch(SUNUCU + '/' + encodeURIComponent(k.k), { method:'POST', body: komut })
-      .then(function(r){ if(!r.ok) throw 0; toast('Gönderildi: ' + komut + ' — cevap birkaç saniye içinde'); if (komut==='durum') $('durumMetin').textContent='Soruluyor…'; })
+    fetch(SUNUCU + '/' + encodeURIComponent(c.k), { method:'POST', body: komut })
+      .then(function(r){ if(!r.ok) throw 0; toast(c.ad + ': ' + komut + ' gönderildi'); if (komut==='durum') $('durumMetin').textContent='Soruluyor…'; })
       .catch(function(){ toast('Gönderilemedi. İnternet bağlantını kontrol et.'); })
       .then(function(){ setTimeout(function(){ dugmeler.forEach(function(b){ b.disabled = false; }); }, 1500); });
   }
@@ -203,27 +244,43 @@ body{padding:calc(env(safe-area-inset-top) + 12px) 16px calc(env(safe-area-inset
   document.querySelectorAll('.btn').forEach(function(b){
     b.addEventListener('click', function(){
       var komut = b.getAttribute('data-komut'), onay = b.getAttribute('data-onay');
-      if (onay) { bekleyen = komut; $('onayBaslik').textContent = b.childNodes[1].textContent.trim() + '?'; $('onayMetin').textContent = onay; $('onayPerde').classList.add('acik'); }
+      if (onay) { bekleyen = komut; var c = secili();
+        $('onayBaslik').textContent = (c ? c.ad + ': ' : '') + b.childNodes[1].textContent.trim() + '?';
+        $('onayMetin').textContent = onay; $('onayPerde').classList.add('acik'); }
       else gonder(komut);
     });
   });
   $('onayIptal').onclick = function(){ bekleyen=null; $('onayPerde').classList.remove('acik'); };
   $('onayEvet').onclick = function(){ $('onayPerde').classList.remove('acik'); if (bekleyen) gonder(bekleyen); bekleyen=null; };
 
-  // --- ayarlar penceresi ---
-  function ayarAc(){ var k=kanallar(); $('bKanal').value=k.b; $('kKanal').value=k.k; $('ayarPerde').classList.add('acik'); }
+  // --- bilgisayar yonetimi ---
+  function cizListe(){
+    var l = cihazlar(), kutu = $('cliste'); kutu.innerHTML = '';
+    if (!l.length) { kutu.innerHTML = '<div class="bos">Henüz bilgisayar eklenmedi.</div>'; return; }
+    l.forEach(function(c, i){
+      var s = document.createElement('div'); s.className = 'satir';
+      var a = document.createElement('div'); a.textContent = c.ad;
+      var k = document.createElement('small'); k.textContent = c.b; a.appendChild(k);
+      var sil = document.createElement('button'); sil.textContent = 'Kaldır';
+      sil.onclick = function(){ var y = cihazlar(); y.splice(i,1); kaydet(y); yaz('secili','0'); cizListe(); basla(); };
+      s.appendChild(a); s.appendChild(sil); kutu.appendChild(s);
+    });
+  }
+  function ayarAc(){ cizListe(); $('ayarPerde').classList.add('acik'); }
   $('ayarBtn').onclick = ayarAc;
   $('ayarIptal').onclick = function(){ $('ayarPerde').classList.remove('acik'); };
   $('ayarKaydet').onclick = function(){
-    yaz('bKanal', $('bKanal').value.trim()); yaz('kKanal', $('kKanal').value.trim());
-    $('ayarPerde').classList.remove('acik'); olaylar=[]; gorulen={}; basla();
+    ekleCihaz($('cAd').value.trim(), $('bKanal').value.trim(), $('kKanal').value.trim());
+    $('cAd').value = $('bKanal').value = $('kKanal').value = '';
+    cizListe(); basla();
   };
   $('yenile').onclick = function(){ gecmis().then(function(){ toast('Güncellendi'); }); };
   document.addEventListener('visibilitychange', function(){ if (!document.hidden) { gecmis(); canli(); } });
 
   function basla(){
-    var k = kanallar();
-    if (!k.b || !k.k) { baglanti('', 'Kurulum gerekli'); $('olaylar').innerHTML='<div class="bos">Sağ üstteki ⚙︎ ile kanalları gir.</div>'; ayarAc(); return; }
+    olaylar = []; gorulen = {};
+    cizCihazlar();
+    if (!cihazlar().length) { baglanti('', 'Kurulum gerekli'); $('olaylar').innerHTML='<div class="bos">Bilgisayardaki Nöbetçi penceresinde “Telefon kurulumu” QR kodunu okut.</div>'; ayarAc(); return; }
     gecmis().then(canli);
   }
   basla();
